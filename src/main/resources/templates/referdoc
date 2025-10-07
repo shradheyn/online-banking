@@ -1,0 +1,534 @@
+ ("pom.xml", """<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>online-banking</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.12</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
+</project>"""),
+
+("application.properties", """spring.datasource.url=jdbc:h2:mem:bankdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.username=sa
+spring.datasource.password=
+spring.datasource.driverClassName=org.h2.Driver
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+server.port=8080"""),
+
+("OnlineBankingApplication.java", """package com.example.onlinebanking;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class OnlineBankingApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(OnlineBankingApplication.class, args);
+    }
+}"""),
+
+("models/User.java", """package com.example.onlinebanking.model;
+
+import lombok.*;
+import javax.persistence.*;
+import java.time.LocalDate;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String username;
+    private String password;
+    private String name;
+    private String email;
+    private String mobile;
+    private String aadharNumber;
+    private LocalDate dob;
+
+    private boolean enabled = false;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private Account account;
+}"""),
+
+("models/Account.java", """package com.example.onlinebanking.model;
+
+import lombok.*;
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Account {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String accountNumber;
+
+    private String accountType;
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Payee> payees = new ArrayList<>();
+}"""),
+
+("models/Payee.java", """package com.example.onlinebanking.model;
+
+import lombok.*;
+import javax.persistence.*;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Payee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String accountNumber;
+    private String nickName;
+}"""),
+
+("models/Transaction.java", """package com.example.onlinebanking.model;
+
+import lombok.*;
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Transaction {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String fromAccount;
+    private String toAccount;
+    private BigDecimal amount;
+    private LocalDateTime timestamp;
+    private String type;
+    private String status;
+}"""),
+
+("repositories/UserRepository.java", """package com.example.onlinebanking.repository;
+
+import com.example.onlinebanking.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}"""),
+
+("repositories/AccountRepository.java", """package com.example.onlinebanking.repository;
+
+import com.example.onlinebanking.model.Account;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+public interface AccountRepository extends JpaRepository<Account, Long> {
+    Optional<Account> findByAccountNumber(String accountNumber);
+}"""),
+
+("repositories/PayeeRepository.java", """package com.example.onlinebanking.repository;
+
+import com.example.onlinebanking.model.Payee;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PayeeRepository extends JpaRepository<Payee, Long> {}"""),
+
+("repositories/TransactionRepository.java", """package com.example.onlinebanking.repository;
+
+import com.example.onlinebanking.model.Transaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+    List<Transaction> findByFromAccountOrToAccount(String from, String to);
+}"""),
+
+("services/UserService.java", """package com.example.onlinebanking.service;
+
+import com.example.onlinebanking.model.User;
+import java.util.List;
+
+public interface UserService {
+    User register(User user);
+    User findByUsername(String username);
+    List<User> pendingApprovals();
+    User approveUser(Long userId);
+}"""),
+
+("services/AccountService.java", """package com.example.onlinebanking.service;
+
+import com.example.onlinebanking.model.Account;
+
+public interface AccountService {
+    Account createAccountForUser(Long userId, Account account);
+    Account getByAccountNumber(String accountNumber);
+}"""),
+
+("services/TransferService.java", """package com.example.onlinebanking.service;
+
+import com.example.onlinebanking.model.Transaction;
+import java.math.BigDecimal;
+
+public interface TransferService {
+    Transaction addPayee(Long userId, String name, String accountNumber, String nickname);
+    Transaction transfer(String fromAccount, String toAccount, BigDecimal amount, String type);
+}"""),
+
+("serviceimpl/UserServiceImpl.java", """package com.example.onlinebanking.service.impl;
+
+import com.example.onlinebanking.model.User;
+import com.example.onlinebanking.repository.UserRepository;
+import com.example.onlinebanking.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+    private final UserRepository userRepository;
+
+    @Override
+    public User register(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    @Override
+    public List<User> pendingApprovals() {
+        return userRepository.findAll().stream().filter(u -> !u.isEnabled()).toList();
+    }
+
+    @Override
+    public User approveUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        user.setEnabled(true);
+        return userRepository.save(user);
+    }
+}"""),
+
+("serviceimpl/AccountServiceImpl.java", """package com.example.onlinebanking.service.impl;
+
+import com.example.onlinebanking.model.Account;
+import com.example.onlinebanking.model.User;
+import com.example.onlinebanking.repository.AccountRepository;
+import com.example.onlinebanking.repository.UserRepository;
+import com.example.onlinebanking.service.AccountService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class AccountServiceImpl implements AccountService {
+    private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
+
+    @Override
+    public Account createAccountForUser(Long userId, Account account) {
+        User user = userRepository.findById(userId).orElseThrow();
+        account.setAccountNumber(\"AC\" + System.currentTimeMillis());
+        Account saved = accountRepository.save(account);
+        user.setAccount(saved);
+        userRepository.save(user);
+        return saved;
+    }
+
+    @Override
+    public Account getByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber).orElse(null);
+    }
+}"""),
+
+("serviceimpl/TransferServiceImpl.java", """package com.example.onlinebanking.service.impl;
+
+import com.example.onlinebanking.exception.InsufficientBalanceException;
+import com.example.onlinebanking.model.*;
+import com.example.onlinebanking.repository.*;
+import com.example.onlinebanking.service.TransferService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Service
+@RequiredArgsConstructor
+public class TransferServiceImpl implements TransferService {
+    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
+
+    @Override
+    public Transaction addPayee(Long userId, String name, String accountNumber, String nickname) {
+        User user = userRepository.findById(userId).orElseThrow();
+        Payee payee = Payee.builder().name(name).accountNumber(accountNumber).nickName(nickname).build();
+        Account account = user.getAccount();
+        account.getPayees().add(payee);
+        accountRepository.save(account);
+        return transactionRepository.save(Transaction.builder()
+                .fromAccount(account.getAccountNumber())
+                .toAccount(accountNumber)
+                .amount(BigDecimal.ZERO)
+                .timestamp(LocalDateTime.now())
+                .type(\"ADD_PAYEE\")
+                .status(\"SUCCESS\")
+                .build());
+    }
+
+    @Override
+    public Transaction transfer(String fromAccount, String toAccount, BigDecimal amount, String type) {
+        Account from = accountRepository.findByAccountNumber(fromAccount).orElseThrow();
+        Account to = accountRepository.findByAccountNumber(toAccount).orElse(null);
+
+        if (from.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException(\"Insufficient balance\");
+        }
+
+        from.setBalance(from.getBalance().subtract(amount));
+        if (to != null) {
+            to.setBalance(to.getBalance().add(amount));
+            accountRepository.save(to);
+        }
+        accountRepository.save(from);
+
+        return transactionRepository.save(Transaction.builder()
+                .fromAccount(fromAccount)
+                .toAccount(toAccount)
+                .amount(amount)
+                .timestamp(LocalDateTime.now())
+                .type(type)
+                .status(\"SUCCESS\")
+                .build());
+    }
+}"""),
+
+("controllers/AuthController.java", """package com.example.onlinebanking.controller;
+
+import com.example.onlinebanking.model.User;
+import com.example.onlinebanking.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+    private final UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody User user) {
+        return ResponseEntity.ok(userService.register(user));
+    }
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(userService.findByUsername(username));
+    }
+}"""),
+
+("controllers/AccountController.java", """package com.example.onlinebanking.controller;
+
+import com.example.onlinebanking.model.Account;
+import com.example.onlinebanking.service.AccountService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/account")
+@RequiredArgsConstructor
+public class AccountController {
+    private final AccountService accountService;
+
+    @PostMapping("/create/{userId}")
+    public ResponseEntity<?> create(@PathVariable Long userId, @RequestBody Account account) {
+        return ResponseEntity.ok(accountService.createAccountForUser(userId, account));
+    }
+
+    @GetMapping("/{accountNumber}")
+    public ResponseEntity<?> get(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(accountService.getByAccountNumber(accountNumber));
+    }
+}"""),
+
+("controllers/TransferController.java", """package com.example.onlinebanking.controller;
+
+import com.example.onlinebanking.model.Transaction;
+import com.example.onlinebanking.service.TransferService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
+
+@RestController
+@RequestMapping("/api/transfer")
+@RequiredArgsConstructor
+public class TransferController {
+    private final TransferService transferService;
+
+    @PostMapping("/addPayee/{userId}")
+    public ResponseEntity<?> addPayee(@PathVariable Long userId,
+                                      @RequestParam String name,
+                                      @RequestParam String accountNumber,
+                                      @RequestParam(required = false) String nickname) {
+        return ResponseEntity.ok(transferService.addPayee(userId, name, accountNumber, nickname));
+    }
+
+    @PostMapping("/send")
+    public ResponseEntity<?> send(@RequestParam String from,
+                                  @RequestParam String to,
+                                  @RequestParam BigDecimal amount,
+                                  @RequestParam String type) {
+        return ResponseEntity.ok(transferService.transfer(from, to, amount, type));
+    }
+}"""),
+
+("controllers/AdminController.java", """package com.example.onlinebanking.controller;
+
+import com.example.onlinebanking.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/admin")
+@RequiredArgsConstructor
+public class AdminController {
+    private final UserService userService;
+
+    @GetMapping("/pending")
+    public ResponseEntity<?> pending() {
+        return ResponseEntity.ok(userService.pendingApprovals());
+    }
+
+    @PostMapping("/approve/{userId}")
+    public ResponseEntity<?> approve(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.approveUser(userId));
+    }
+}"""),
+
+("exceptions/ResourceNotFoundException.java", """package com.example.onlinebanking.exception;
+
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}"""),
+
+("exceptions/InsufficientBalanceException.java", """package com.example.onlinebanking.exception;
+
+public class InsufficientBalanceException extends RuntimeException {
+    public InsufficientBalanceException(String message) {
+        super(message);
+    }
+}"""),
+
+("exceptions/GlobalExceptionHandler.java", """package com.example.onlinebanking.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<?> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<?> handleInsufficient(InsufficientBalanceException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleOther(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+}"""),
+]
+
