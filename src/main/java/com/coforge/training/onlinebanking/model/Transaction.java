@@ -12,7 +12,7 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "transactiosn_id")
-    private int transaction_id;
+    private long transaction_id;
 
     // Foreign Key: Many transactions belong to one account
     @ManyToOne

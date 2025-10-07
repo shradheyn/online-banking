@@ -11,7 +11,7 @@ public class Payee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payee_id")
-    private int payee_id;
+    private long payee_id;
 
     // Foreign Key: Many payees can be registered by one user
     @ManyToOne
