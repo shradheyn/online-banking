@@ -1,38 +1,57 @@
 package com.coforge.training.onlinebanking.model;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "transactions")
 public class Transaction {
 
-    // Primary Key
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "transactiosn_id")
-    private long transaction_id;
+    @Column(name = "transaction_id")
+    private Long transactionId;
 
-    // Foreign Key: Many transactions belong to one account
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", referencedColumnName = "account_number", nullable = false)
-    private Account account;   // Relationship: Account "performs transactions"
+    private Account account;
 
-    @Column(name = "beneficiary_account_number", nullable = false, length = 20)
-    private String beneficiary_account_number;
+    @Column(name = "beneficiary_account_number", nullable = false, length = 50)
+    private String beneficiaryAccountNumber;
 
     @Column(name = "mode", nullable = false, length = 20)
-    private String mode;
+    private String mode; // NEFT or UPI
 
-    @Column(name = "amount", nullable = false)
-    private double amount;
+    @Column(name = "amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
 
     @Column(name = "transaction_time", nullable = false)
-    private LocalDate transaction_time;
+    private LocalDateTime transactionTime = LocalDateTime.now();
 
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
-    // Getters & Setters
+    @Column(name = "remarks", length = 255)
+    private String remarks;
+
+    public Transaction() {}
+
+    // getters & setters
+    public Long getTransactionId() { return transactionId; }
+    public void setTransactionId(Long transactionId) { this.transactionId = transactionId; }
+    public Account getAccount() { return account; }
+    public void setAccount(Account account) { this.account = account; }
+    public String getBeneficiaryAccountNumber() { return beneficiaryAccountNumber; }
+    public void setBeneficiaryAccountNumber(String beneficiaryAccountNumber) { this.beneficiaryAccountNumber = beneficiaryAccountNumber; }
+    public String getMode() { return mode; }
+    public void setMode(String mode) { this.mode = mode; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public LocalDateTime getTransactionTime() { return transactionTime; }
+    public void setTransactionTime(LocalDateTime transactionTime) { this.transactionTime = transactionTime; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public String getRemarks() { return remarks; }
+    public void setRemarks(String remarks) { this.remarks = remarks; }
 }

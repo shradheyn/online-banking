@@ -1,7 +1,10 @@
 package com.coforge.training.onlinebanking.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.coforge.training.onlinebanking.model.Account;
 import com.coforge.training.onlinebanking.model.Transaction;
 
 /**
@@ -11,6 +14,6 @@ import com.coforge.training.onlinebanking.model.Transaction;
 * Project  : online-banking
 */
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-
+	List<Transaction> findByAccount(Account account);
 }
 

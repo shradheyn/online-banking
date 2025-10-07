@@ -1,8 +1,13 @@
 package com.coforge.training.onlinebanking.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.coforge.training.onlinebanking.model.Payee;
+import com.coforge.training.onlinebanking.model.User;
+
 
 /**
 * Author   : Shradhey.Naudiyal
@@ -11,5 +16,6 @@ import com.coforge.training.onlinebanking.model.Payee;
 * Project  : online-banking
 */
 public interface PayeeRepository extends JpaRepository<Payee, Long>{
-
+	List<Payee> findByUser(User user);
+    Optional<Payee> findByBeneficiaryAccountNumber(String accountNumber);
 }

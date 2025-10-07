@@ -1,51 +1,31 @@
 package com.coforge.training.onlinebanking.service;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.coforge.training.onlinebanking.model.User;
 import com.coforge.training.onlinebanking.repository.UserRepository;
+import com.coforge.training.onlinebanking.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
+    private final UserRepository repo;
+    public UserService(UserRepository repo) { this.repo = repo; }
 
-	
-		
-	    private final UserRepository userRepository;
-
-	   
-	    /**
-		 * @param userRepository
-		 */
-		public UserService(UserRepository userRepository) {
-			super();
-			this.userRepository = userRepository;
-		}
-
-
-		public User register(User user) {
-	        return userRepository.save(user);
-	    }
-
-	 
-	    public User findByUsername(String username) {
-	        return userRepository.findByUsername(username).orElse(null);
-	    }
-
-	    
-//	    public List<User> pendingApprovals() {
-//	        return userRepository.findAll().stream().filter(u -> !u.isEnabled()).toList();
-//	    }
-//
-//	
-//	    public User approveUser(Long userId) {
-//	        User user = userRepository.findById(userId).orElseThrow();
-//	        user.setEnabled(true);
-//	        return userRepository.save(user);
-//	    }
+    public User create(User user){ return repo.save(user); }
+    public User getById(Long id){ return repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found: " + id)); }
+    public List<User> getAll(){ return repo.findAll(); }
+    public User update(Long id, User update){
+        User u = getById(id);
+        u.setFName(update.getFName());
+        u.setLName(update.getLName());
+        u.setEmail(update.getEmail());
+        u.setAadharNumber(update.getAadharNumber());
+        u.setPhoneNumber(update.getPhoneNumber());
+        u.setResidentialAddress(update.getResidentialAddress());
+        u.setPermanentAddress(update.getPermanentAddress());
+        u.setOccupation(update.getOccupation());
+        return repo.save(u);
+    }
+    public void delete(Long id){ repo.delete(getById(id)); }
 }

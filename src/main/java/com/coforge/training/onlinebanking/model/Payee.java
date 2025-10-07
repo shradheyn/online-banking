@@ -1,34 +1,52 @@
 package com.coforge.training.onlinebanking.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "payees")
 public class Payee {
 
-    // Primary Key
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payee_id")
-    private long payee_id;
+    private Long payeeId;
 
-    // Foreign Key: Many payees can be registered by one user
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "u_id", nullable = false)
-    private User user;   // Relationship: User "registers payee"
+    private User user;
 
     @Column(name = "beneficiary_name", nullable = false, length = 100)
-    private String beneficiary_name;
+    private String beneficiaryName;
 
-    @Column(name = "beneficiary_account_number", nullable = false, unique = true, length = 20)
-    private String beneficiary_account_number;
+    @Column(name = "beneficiary_account_number", nullable = false, length = 50)
+    private String beneficiaryAccountNumber;
 
     @Column(name = "nickname", length = 50)
     private String nickname;
 
-    @Column(name = "datetime", nullable = false)
-    private LocalDate datetime;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    
+    public Payee() {}
+
+    // getters & setters
+
+    public Long getPayeeId() { return payeeId; }
+    public void setPayeeId(Long payeeId) { this.payeeId = payeeId; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public String getBeneficiaryName() { return beneficiaryName; }
+    public void setBeneficiaryName(String beneficiaryName) { this.beneficiaryName = beneficiaryName; }
+
+    public String getBeneficiaryAccountNumber() { return beneficiaryAccountNumber; }
+    public void setBeneficiaryAccountNumber(String beneficiaryAccountNumber) { this.beneficiaryAccountNumber = beneficiaryAccountNumber; }
+
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

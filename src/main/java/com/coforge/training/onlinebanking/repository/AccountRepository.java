@@ -1,13 +1,16 @@
 package com.coforge.training.onlinebanking.repository;
 
+import com.coforge.training.onlinebanking.model.Account;
+import com.coforge.training.onlinebanking.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+public interface AccountRepository extends JpaRepository<Account, Long> {
 
-import com.coforge.training.onlinebanking.model.Account;
+    // Find all accounts belonging to a given user
+    List<Account> findByUser(User user);
 
-public interface AccountRepository extends JpaRepository<Account, Long>{
-
-	Optional<Account> findByAccountNumber(String accountNumber);
-
+    // Find a single account by its number
+    Optional<Account> findByAccountNumber(Long accountNumber);
 }
